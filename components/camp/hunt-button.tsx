@@ -67,6 +67,10 @@ export function HuntButton({ energy, trap, rug, bait }: HuntButtonProps) {
         <Button
           onClick={handleHunt}
           disabled={!canHunt}
+          aria-disabled={!canHunt}
+          aria-label={canHunt ? 'Start hunting' : getDisabledReason() ?? 'Cannot hunt'}
+          title={canHunt ? 'Start hunting' : getDisabledReason() ?? 'Cannot hunt'}
+          type="button"
           size="lg"
           className={`px-8 py-4 text-lg font-semibold ${
             canHunt

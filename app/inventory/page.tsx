@@ -1,6 +1,7 @@
 import { RouteGuard } from '@/components/auth/route-guard';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { Header } from '@/components/layout/header';
+import InventoryList from '@/components/inventory/inventory-list';
 
 export default function InventoryPage() {
   return (
@@ -21,7 +22,7 @@ export default function InventoryPage() {
             {/* Inventory Content */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Items</h2>
-              <p className="text-gray-600">Inventory functionality coming soon...</p>
+              <InventoryList />
             </div>
           </div>
         </main>

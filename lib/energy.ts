@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase/client';
-import type { EnergyRefillResult } from '@/types/db';
 
 /**
  * Applies energy refill for the current user

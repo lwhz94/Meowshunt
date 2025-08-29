@@ -27,7 +27,7 @@ export function LoginForm() {
         // Redirect to camp on successful login
         router.push('/camp');
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);

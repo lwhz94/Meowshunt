@@ -33,15 +33,20 @@ export function formatTimeUntilRefill(nextRefill: Date): string {
   const diffMs = nextRefill.getTime() - now.getTime();
   
   if (diffMs <= 0) {
-    return 'Now';
+    return '00:00';
+  }
+  
+  const totalSeconds = Math.ceil(diffMs / 1000);
+  
+  if (totalSeconds < 3600) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+    return `${mm}:${ss}`; // mm:ss for < 1 hour
   }
   
   const diffMinutes = Math.ceil(diffMs / (1000 * 60));
-  
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m`;
-  }
-  
   const hours = Math.floor(diffMinutes / 60);
   const minutes = diffMinutes % 60;
   

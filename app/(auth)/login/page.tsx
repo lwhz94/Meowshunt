@@ -32,7 +32,7 @@ export default async function LoginPage() {
         
         <div className="text-center">
           <p className="text-sm text-gray-500">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign up
             </a>

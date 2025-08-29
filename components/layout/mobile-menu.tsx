@@ -1,13 +1,12 @@
 "use client";
 
-import { useAuth } from "@/lib/auth/context";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any;
+  user: { email?: string } | undefined;
   onSignOut: () => void;
 }
 

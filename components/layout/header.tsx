@@ -92,7 +92,7 @@ export function Header() {
       <MobileMenu 
         isOpen={mobileMenuOpen} 
         onClose={() => setMobileMenuOpen(false)}
-        user={user}
+        user={user ? { email: user.email } : undefined}
         onSignOut={signOut}
       />
     </header>

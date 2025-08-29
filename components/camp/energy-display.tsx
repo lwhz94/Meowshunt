@@ -26,20 +26,42 @@ export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: Ene
   const [timeUntilRefill, setTimeUntilRefill] = useState('');
   const { toast } = useToast();
 
-  // Calculate initial values
+  // Calculate initial values with persistence so refresh doesn't reset timer
   useEffect(() => {
-    const nextRefill = getNextRefillTime(lastRefillTime, energy, maxEnergy);
+    // Try to restore persisted nextRefill target
+    let restored: Date | undefined;
+    try {
+      const stored = typeof window !== 'undefined' ? window.localStorage.getItem('energy_next_refill') : null;
+      if (stored) {
+        const ts = Number(stored);
+        if (!Number.isNaN(ts)) {
+          const d = new Date(ts);
+          if (d.getTime() > Date.now()) {
+            restored = d;
+          }
+        }
+      }
+    } catch {}
+
+    const nextRefill = restored ?? getNextRefillTime(lastRefillTime, energy, maxEnergy);
     setNextRefillTime(nextRefill);
     setTimeUntilRefill(formatTimeUntilRefill(nextRefill));
+
+    // Persist the target so reload keeps countdown
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('energy_next_refill', String(nextRefill.getTime()));
+      }
+    } catch {}
   }, [lastRefillTime, energy, maxEnergy]);
 
-  // Update countdown timer
+  // Update countdown timer (every second for mm:ss accuracy)
   useEffect(() => {
     const interval = setInterval(() => {
       if (nextRefillTime) {
         setTimeUntilRefill(formatTimeUntilRefill(nextRefillTime));
       }
-    }, 60000); // Update every minute
+    }, 1000); // Update every second
 
     return () => clearInterval(interval);
   }, [nextRefillTime]);
@@ -60,6 +82,11 @@ export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: Ene
         setLastRefillTime(new Date());
         const nextRefill = getNextRefillTime(new Date(), result.newEnergy, maxEnergy);
         setNextRefillTime(nextRefill);
+        try {
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem('energy_next_refill', String(nextRefill.getTime()));
+          }
+        } catch {}
         
         toast({
           title: "Energy Refilled!",
@@ -72,7 +99,7 @@ export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: Ene
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Refill Failed",
         description: "An unexpected error occurred",
@@ -82,6 +109,24 @@ export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: Ene
       setIsRefilling(false);
     }
   };
+
+  // Auto-apply refill when available while on the camp page
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const autoRefillAvailable = calculateRefillableEnergy(lastRefillTime, energy, maxEnergy) > 0;
+      if (autoRefillAvailable && !isRefilling) {
+        void handleRefill();
+      }
+    }, 1000); // Check every second to trigger right at 00:00
+
+    // Also check immediately on mount/update
+    const autoRefillAvailableNow = calculateRefillableEnergy(lastRefillTime, energy, maxEnergy) > 0;
+    if (autoRefillAvailableNow && !isRefilling) {
+      void handleRefill();
+    }
+
+    return () => clearInterval(interval);
+  }, [lastRefillTime, energy, maxEnergy, isRefilling]);
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
@@ -93,6 +138,10 @@ export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: Ene
         <Button
           onClick={handleRefill}
           disabled={!canRefill || isRefilling}
+          aria-disabled={!canRefill || isRefilling}
+          aria-label={canRefill ? 'Refill energy' : 'Refill unavailable'}
+          title={canRefill ? 'Refill energy' : 'Refill unavailable'}
+          type="button"
           size="sm"
           variant="outline"
           className="text-blue-700 border-blue-300 hover:bg-blue-200"
@@ -117,7 +166,7 @@ export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: Ene
       </div>
 
       {/* Refill Info */}
-      <div className="text-sm text-blue-700">
+      <div className="text-sm text-blue-700" aria-live="polite" aria-atomic="true">
         {canRefill ? (
           <p>You can refill {calculateRefillableEnergy(lastRefillTime, energy, maxEnergy)} energy now!</p>
         ) : (

@@ -16,6 +16,7 @@ export interface Profile {
   rank_id: string | null;
   energy: number;
   last_energy_refill: string;
+  current_location_id?: string | null;
   created_at: string;
 }
 

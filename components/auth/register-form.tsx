@@ -41,7 +41,7 @@ export function RegisterForm() {
         // Redirect to camp on successful registration
         router.push('/camp');
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);

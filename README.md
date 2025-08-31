@@ -54,6 +54,85 @@ A fun cat hunting game built with Next.js, Supabase, and TypeScript.
 
 3. **Open [http://localhost:3000](http://localhost:3000)**
 
+## 🚀 Deploy to Vercel
+
+### Quick Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/Meowshunt)
+
+### Manual Deployment
+
+1. **Push to GitHub:**
+   ```bash
+   git push origin main
+   ```
+
+2. **Connect to Vercel:**
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Vercel will auto-detect Next.js
+
+3. **Configure Environment Variables:**
+   - Go to Project Settings → Environment Variables
+   - Add the following variables:
+
+### Environment Variables Checklist ✅
+
+#### **Required for Production:**
+- [ ] `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon/public key
+
+#### **Required for Database Seeding (Development Only):**
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+
+#### **Optional:**
+- [ ] `NEXT_PUBLIC_SITE_URL` - Your production domain (for SEO)
+
+### Environment Variable Examples
+
+```bash
+# Production (Vercel)
+NEXT_PUBLIC_SUPABASE_URL=https://yourproject.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Development Only (Local)
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Deployment Steps
+
+1. **Build Check:**
+   ```bash
+   npm run build
+   ```
+
+2. **Deploy:**
+   - Vercel will automatically build and deploy
+   - Check build logs for any errors
+   - Verify environment variables are loaded
+
+3. **Post-Deployment:**
+   - Test user registration and login
+   - Verify Supabase connection works
+   - Check that the game loads properly
+
+### Troubleshooting Deployment
+
+#### **Build Fails:**
+- Check environment variables are set correctly
+- Verify `NEXT_PUBLIC_SUPABASE_*` variables are present
+- Check build logs for specific error messages
+
+#### **Runtime Errors:**
+- Verify Supabase project is accessible
+- Check environment variables are loaded
+- Test database connection from production
+
+#### **Environment Variables Not Loading:**
+- Ensure variables are set in Vercel dashboard
+- Check variable names match exactly
+- Redeploy after adding new variables
+
 ## 🎮 Game Features
 
 - **Hunting System** - Catch meows with traps, rugs, and bait
@@ -103,6 +182,7 @@ npx tsx scripts/seed.ts
 - **Styling**: Tailwind CSS
 - **State**: React hooks + Server Actions
 - **Database**: PostgreSQL with Row Level Security
+- **Deployment**: Vercel (recommended)
 
 ## 📁 Project Structure
 
@@ -112,7 +192,9 @@ npx tsx scripts/seed.ts
 ├── lib/                # Utilities and configurations
 ├── scripts/            # Database seeding and utilities
 ├── supabase/           # Database migrations and config
-└── types/              # TypeScript type definitions
+├── types/              # TypeScript type definitions
+├── public/             # Static assets and SEO files
+└── scripts/            # Build and deployment scripts
 ```
 
 ## 🐛 Troubleshooting
@@ -122,6 +204,7 @@ npx tsx scripts/seed.ts
 1. **"User not authenticated" errors**: Ensure you're logged in
 2. **Database connection issues**: Check Supabase credentials
 3. **Seed script fails**: Verify `SUPABASE_SERVICE_ROLE_KEY` is set
+4. **Build fails on Vercel**: Check environment variables
 
 ### Reset Database
 
@@ -130,6 +213,12 @@ To start fresh:
 npx supabase db reset
 npm run seed
 ```
+
+### Local vs Production
+
+- **Local Development**: Uses `.env.local` with all variables
+- **Production (Vercel)**: Uses Vercel environment variables
+- **Database Seeding**: Only available locally (requires service role key)
 
 ## 📝 License
 

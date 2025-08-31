@@ -1,0 +1,23 @@
+# Meowshunt - Cat Hunting Game
+# robots.txt for production deployment
+
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /test-countdown/
+
+# Allow game pages
+Allow: /camp
+Allow: /shop
+Allow: /inventory
+Allow: /collections
+Allow: /locations
+
+# Sitemap location
+Sitemap: https://yourdomain.vercel.app/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1

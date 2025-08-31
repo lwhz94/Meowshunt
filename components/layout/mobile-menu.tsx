@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Settings } from "lucide-react";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  user: { email?: string } | undefined;
+  user: { email?: string; isAdmin?: boolean } | undefined;
   onSignOut: () => void;
 }
 
@@ -62,6 +62,16 @@ export function MobileMenu({ isOpen, onClose, user, onSignOut }: MobileMenuProps
               >
                 Collections
               </a>
+              {user.isAdmin && (
+                <a
+                  href="/admin"
+                  className="block text-indigo-700 hover:text-indigo-900 px-3 py-2 text-base font-medium flex items-center gap-2"
+                  onClick={onClose}
+                >
+                  <Settings className="w-4 h-4" />
+                  Admin
+                </a>
+              )}
             </>
           ) : (
             <a

@@ -1,14 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/context";
 import { MobileMenu } from "./mobile-menu";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Settings } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 
 export function Header() {
   const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [rankName, setRankName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) { 
+        setRankName(null); 
+        setIsAdmin(false);
+        return; 
+      }
+      
+      const [rankRes, adminRes] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('rank:ranks(name)')
+          .eq('id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .maybeSingle()
+      ]);
+      
+      if (!rankRes.error && rankRes.data) {
+        setRankName((rankRes.data as { rank: { name: string }[] })?.rank?.[0]?.name ?? null);
+      } else {
+        setRankName(null);
+      }
+      
+      if (!adminRes.error && adminRes.data) {
+        setIsAdmin((adminRes.data as { is_admin?: boolean })?.is_admin ?? false);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    loadUserData();
+  }, [user]);
 
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -43,6 +82,12 @@ export function Header() {
                 <a href="/collections" className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
                   Collections
                 </a>
+                {isAdmin && (
+                  <a href="/admin" className="text-indigo-700 hover:text-indigo-900 px-3 py-2 text-sm font-medium flex items-center gap-1">
+                    <Settings className="w-4 h-4" />
+                    Admin
+                  </a>
+                )}
               </>
             ) : (
               <a href="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
@@ -55,6 +100,11 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
+                {rankName && (
+                  <span className="text-xs px-2 py-1 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    {rankName}
+                  </span>
+                )}
                 <span className="text-sm text-gray-700">
                   Welcome, {user.email?.split('@')[0]}
                 </span>
@@ -92,7 +142,7 @@ export function Header() {
       <MobileMenu 
         isOpen={mobileMenuOpen} 
         onClose={() => setMobileMenuOpen(false)}
-        user={user ? { email: user.email } : undefined}
+        user={user ? { email: user.email, isAdmin } : undefined}
         onSignOut={signOut}
       />
     </header>

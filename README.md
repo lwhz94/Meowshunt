@@ -1,15 +1,8 @@
 # Meowshunt 🐱
 
-A mobile-first web game where players hunt for "Meows" using traps, rugs, and baits.
+A fun cat hunting game built with Next.js, Supabase, and TypeScript.
 
-## Tech Stack
-
-- **Frontend**: Next.js 14+ (App Router + TypeScript)
-- **UI**: shadcn/ui components with TailwindCSS
-- **Backend**: Supabase (PostgreSQL, authentication, API)
-- **Hosting**: Vercel (frontend + API routes)
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -17,80 +10,127 @@ A mobile-first web game where players hunt for "Meows" using traps, rugs, and ba
 - npm or yarn
 - Supabase account and project
 
-### Installation
+### Environment Setup
+
+1. Clone the repository
+2. Copy `.env.local.example` to `.env.local`
+3. Fill in your Supabase credentials:
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   ```
+
+### Database Setup
+
+1. **Run Supabase migrations:**
+   ```bash
+   npx supabase db push
+   ```
+
+2. **Seed the database with sample data:**
+   ```bash
+   npm run seed
+   ```
+   
+   This will create:
+   - 5 ranks for progression
+   - 2 hunting locations
+   - 9 shop items (traps, rugs, baits)
+   - 6 meows to catch
+   - Spawn mappings and starter inventory
+
+### Development
 
 1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Set up environment variables:**
-   ```bash
-   cp env.local.example .env.local
-   ```
-   
-   Edit `.env.local` with your Supabase credentials:
-   ```bash
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-3. **Run the development server:**
+2. **Start development server:**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+3. **Open [http://localhost:3000](http://localhost:3000)**
 
-## Project Structure
+## 🎮 Game Features
+
+- **Hunting System** - Catch meows with traps, rugs, and bait
+- **Progression** - Earn XP and rank up
+- **Shop System** - Buy better equipment
+- **Inventory Management** - Manage your items
+- **Energy System** - Regenerates over time
+- **Multiple Locations** - Unlock new hunting grounds
+
+## 🛠️ Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run seed` - Seed database with sample data
+
+### Database Seeding
+
+The seed script (`scripts/seed.ts`) populates your database with:
+
+- **Ranks**: Novice Hunter → Legendary Hunter
+- **Locations**: Backyard Garden (unlocked), Mystic Forest (Rank 2+)
+- **Items**: 3 traps, 3 rugs, 3 baits of varying rarity
+- **Meows**: 6 cats from common to epic rarity
+- **Mappings**: Where items and meows can spawn
+- **Starter Equipment**: Basic trap, rug, and bait for new users
+
+### Running the Seed Script
+
+```bash
+# Using npm script
+npm run seed
+
+# Or directly with tsx
+npx tsx scripts/seed.ts
+```
+
+**Note**: Requires `SUPABASE_SERVICE_ROLE_KEY` in your `.env.local` for admin operations.
+
+## 🏗️ Architecture
+
+- **Frontend**: Next.js 14 with App Router
+- **Backend**: Supabase (PostgreSQL + Auth + API)
+- **Styling**: Tailwind CSS
+- **State**: React hooks + Server Actions
+- **Database**: PostgreSQL with Row Level Security
+
+## 📁 Project Structure
 
 ```
-meowshunt/
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Root layout with meta tags
-│   ├── page.tsx           # Landing page
-│   └── globals.css        # Global styles
-├── components/ui/          # shadcn/ui components
-│   ├── button.tsx         # Button component
-│   ├── card.tsx           # Card component
-│   ├── dialog.tsx         # Dialog component
-│   ├── sheet.tsx          # Sheet component
-│   ├── tabs.tsx           # Tabs component
-│   └── toast.tsx          # Toast component
-├── lib/                    # Utility libraries
-│   ├── utils.ts           # Utility functions
-│   └── supabase/          # Supabase helpers
-│       ├── client.ts      # Client-side Supabase
-│       └── server.ts      # Server-side Supabase
-└── config files           # TypeScript, Tailwind, etc.
+├── app/                 # Next.js app router pages
+├── components/          # React components
+├── lib/                # Utilities and configurations
+├── scripts/            # Database seeding and utilities
+├── supabase/           # Database migrations and config
+└── types/              # TypeScript type definitions
 ```
 
-## Game Features (Planned)
+## 🐛 Troubleshooting
 
-- **Hunting System**: Equip traps, rugs, and baits to catch Meows
-- **Energy Management**: 15 energy cap, regenerates over time
-- **Progression**: Experience points, ranks, and unlockable locations
-- **Collection**: Catch and collect different Meow types
-- **Shop**: Purchase equipment and consumables
-- **Admin Dashboard**: Content management for game administrators
+### Common Issues
 
-## Development
+1. **"User not authenticated" errors**: Ensure you're logged in
+2. **Database connection issues**: Check Supabase credentials
+3. **Seed script fails**: Verify `SUPABASE_SERVICE_ROLE_KEY` is set
 
-- **Mobile-first design** with responsive components
-- **Accessibility** built-in with ARIA labels and keyboard navigation
-- **TypeScript** for type safety
-- **TailwindCSS** for styling
-- **shadcn/ui** for consistent, accessible components
+### Reset Database
 
-## Next Steps
+To start fresh:
+```bash
+npx supabase db reset
+npm run seed
+```
 
-1. Set up Supabase database schema
-2. Implement authentication system
-3. Create game mechanics and hunting logic
-4. Build user interface components
-5. Add admin dashboard functionality
+## 📝 License
 
-## Contributing
-
-This is a development project. Follow the established patterns and ensure all components are mobile-responsive and accessible.
+This project is private and proprietary.

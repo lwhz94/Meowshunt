@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { applyEnergyRefillAction } from '@/lib/actions/energy';
+import { Zap, Clock, Battery } from 'lucide-react';
 import { 
-  calculateRefillableEnergy, 
   getNextRefillTime, 
   formatTimeUntilRefill,
   getEnergyProgress 
 } from '@/lib/utils/energy';
-import { useToast } from '@/components/ui/use-toast';
-import { RefreshCw, Zap } from 'lucide-react';
 
 interface EnergyDisplayProps {
   currentEnergy: number;
@@ -19,114 +14,33 @@ interface EnergyDisplayProps {
 }
 
 export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: EnergyDisplayProps) {
-  const [energy, setEnergy] = useState(currentEnergy);
-  const [lastRefillTime, setLastRefillTime] = useState(new Date(lastRefill));
-  const [nextRefillTime, setNextRefillTime] = useState<Date>();
-  const [isRefilling, setIsRefilling] = useState(false);
-  const [timeUntilRefill, setTimeUntilRefill] = useState('');
-  const { toast } = useToast();
+  // Simple display logic - all regeneration happens server-side
+  const lastRefillDate = new Date(lastRefill);
+  const nextRefillTime = getNextRefillTime(lastRefillDate, currentEnergy, maxEnergy);
+  const progress = getEnergyProgress(currentEnergy, maxEnergy);
+  const isAtMax = currentEnergy >= maxEnergy;
+  const energyNeeded = maxEnergy - currentEnergy;
 
-  // Calculate initial values with persistence so refresh doesn't reset timer
-  useEffect(() => {
-    // Try to restore persisted nextRefill target
-    let restored: Date | undefined;
-    try {
-      const stored = typeof window !== 'undefined' ? window.localStorage.getItem('energy_next_refill') : null;
-      if (stored) {
-        const ts = Number(stored);
-        if (!Number.isNaN(ts)) {
-          const d = new Date(ts);
-          if (d.getTime() > Date.now()) {
-            restored = d;
-          }
-        }
-      }
-    } catch {}
-
-    const nextRefill = restored ?? getNextRefillTime(lastRefillTime, energy, maxEnergy);
-    setNextRefillTime(nextRefill);
-    setTimeUntilRefill(formatTimeUntilRefill(nextRefill));
-
-    // Persist the target so reload keeps countdown
-    try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('energy_next_refill', String(nextRefill.getTime()));
-      }
-    } catch {}
-  }, [lastRefillTime, energy, maxEnergy]);
-
-  // Update countdown timer (every second for mm:ss accuracy)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (nextRefillTime) {
-        setTimeUntilRefill(formatTimeUntilRefill(nextRefillTime));
-      }
-    }, 1000); // Update every second
-
-    return () => clearInterval(interval);
-  }, [nextRefillTime]);
-
-  const canRefill = calculateRefillableEnergy(lastRefillTime, energy, maxEnergy) > 0;
-  const progress = getEnergyProgress(energy, maxEnergy);
-
-  const handleRefill = async () => {
-    if (!canRefill || isRefilling) return;
-
-    setIsRefilling(true);
+  // Calculate time to full energy
+  const timeToFull = (() => {
+    if (isAtMax) return '';
     
-    try {
-      const result = await applyEnergyRefillAction();
-      
-      if (result.success && typeof result.newEnergy === 'number') {
-        setEnergy(result.newEnergy);
-        setLastRefillTime(new Date());
-        const nextRefill = getNextRefillTime(new Date(), result.newEnergy, maxEnergy);
-        setNextRefillTime(nextRefill);
-        try {
-          if (typeof window !== 'undefined') {
-            window.localStorage.setItem('energy_next_refill', String(nextRefill.getTime()));
-          }
-        } catch {}
-        
-        toast({
-          title: "Energy Refilled!",
-          description: `Your energy is now ${result.newEnergy}/${maxEnergy}`,
-        });
-      } else {
-        toast({
-          title: "Refill Failed",
-          description: result.error || "Unable to refill energy",
-          variant: "destructive",
-        });
-      }
-    } catch {
-      toast({
-        title: "Refill Failed",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRefilling(false);
+    const minutesToFull = energyNeeded * 15;
+    
+    if (minutesToFull < 60) {
+      return `${minutesToFull}m`;
+    } else {
+      const hours = Math.floor(minutesToFull / 60);
+      const minutes = minutesToFull % 60;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
     }
-  };
+  })();
 
-  // Auto-apply refill when available while on the camp page
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const autoRefillAvailable = calculateRefillableEnergy(lastRefillTime, energy, maxEnergy) > 0;
-      if (autoRefillAvailable && !isRefilling) {
-        void handleRefill();
-      }
-    }, 1000); // Check every second to trigger right at 00:00
-
-    // Also check immediately on mount/update
-    const autoRefillAvailableNow = calculateRefillableEnergy(lastRefillTime, energy, maxEnergy) > 0;
-    if (autoRefillAvailableNow && !isRefilling) {
-      void handleRefill();
-    }
-
-    return () => clearInterval(interval);
-  }, [lastRefillTime, energy, maxEnergy, isRefilling]);
+  // Format countdown timer
+  const countdownTimer = (() => {
+    if (isAtMax) return '00:00';
+    return formatTimeUntilRefill(nextRefillTime);
+  })();
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
@@ -135,48 +49,63 @@ export function EnergyDisplay({ currentEnergy, lastRefill, maxEnergy = 15 }: Ene
           <Zap className="w-5 h-5" />
           Energy
         </h3>
-        <Button
-          onClick={handleRefill}
-          disabled={!canRefill || isRefilling}
-          aria-disabled={!canRefill || isRefilling}
-          aria-label={canRefill ? 'Refill energy' : 'Refill unavailable'}
-          title={canRefill ? 'Refill energy' : 'Refill unavailable'}
-          type="button"
-          size="sm"
-          variant="outline"
-          className="text-blue-700 border-blue-300 hover:bg-blue-200"
-        >
-          <RefreshCw className={`w-4 h-4 mr-1 ${isRefilling ? 'animate-spin' : ''}`} />
-          {isRefilling ? 'Refilling...' : 'Refill'}
-        </Button>
+        <div className="text-sm text-blue-700 font-medium">
+          {currentEnergy}/{maxEnergy}
+        </div>
       </div>
 
       {/* Energy Progress Bar */}
-      <div className="mb-3">
-        <div className="flex justify-between text-sm text-blue-700 mb-1">
-          <span>{energy}/{maxEnergy}</span>
+      <div className="mb-4">
+        <div className="flex justify-between text-sm text-blue-700 mb-2">
+          <span>Progress</span>
           <span>{progress}%</span>
         </div>
-        <div className="w-full bg-blue-200 rounded-full h-3">
+        <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
           <div 
-            className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+            className="h-3 rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-blue-500 to-blue-600"
             style={{ width: `${progress}%` }}
+            role="progressbar"
+            aria-valuenow={currentEnergy}
+            aria-valuemin={0}
+            aria-valuemax={maxEnergy}
+            aria-label={`Energy level: ${currentEnergy} out of ${maxEnergy}`}
           />
         </div>
       </div>
 
-      {/* Refill Info */}
-      <div className="text-sm text-blue-700" aria-live="polite" aria-atomic="true">
-        {canRefill ? (
-          <p>You can refill {calculateRefillableEnergy(lastRefillTime, energy, maxEnergy)} energy now!</p>
-        ) : (
-          <p>Next refill in: <span className="font-medium">{timeUntilRefill}</span></p>
+      {/* Energy Information */}
+      <div className="space-y-3">
+        {/* Next Energy Point Countdown */}
+        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 text-blue-800">
+            <Clock className="w-4 h-4" />
+            <span className="text-sm font-medium">Next energy point:</span>
+          </div>
+          <div className="font-mono font-bold text-lg text-blue-900 bg-white px-3 py-1 rounded border">
+            {countdownTimer}
+          </div>
+        </div>
+        
+        {/* Time to Full Energy */}
+        {timeToFull && (
+          <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center gap-2 text-green-800">
+              <Battery className="w-4 h-4" />
+              <span className="text-sm font-medium">Time to full energy:</span>
+            </div>
+            <div className="font-semibold text-green-900 bg-white px-3 py-1 rounded border">
+              {timeToFull}
+            </div>
+          </div>
         )}
-      </div>
 
-      {/* Refill Schedule */}
-      <div className="mt-3 text-xs text-blue-600">
-        <p>Energy refills every 15 minutes (1 per refill)</p>
+        {/* Energy Regeneration Info */}
+        <div className="text-center pt-2 text-xs text-blue-600 bg-white/50 rounded-lg p-2">
+          <span className="font-medium">✨ Energy regenerates automatically every 15 minutes!</span>
+          <div className="mt-1 text-green-600 font-medium">
+            Server-side regeneration - works even when offline! 🎯
+          </div>
+        </div>
       </div>
     </div>
   );

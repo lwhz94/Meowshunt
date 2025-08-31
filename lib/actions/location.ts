@@ -88,7 +88,7 @@ export async function getLocationsWithAvailabilityAction() {
     locations: locationsRes.data,
     items: itemsRes.data,
     meows: meowsRes.data,
-    currentLocationId: (profileRes.data as any)?.current_location_id ?? null
+    currentLocationId: profileRes.data?.current_location_id ?? null
   };
 }
 

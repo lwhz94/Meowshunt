@@ -5,12 +5,8 @@ import { EnergyDisplay } from '@/components/camp/energy-display';
 import { EquipmentDisplay } from '@/components/camp/equipment-display';
 import { HuntButton } from '@/components/camp/hunt-button';
 import { getProfileDataAction } from '@/lib/actions/profile';
-import { applyEnergyRefillAction } from '@/lib/actions/energy';
 
 export default async function CampPage() {
-  // Apply energy refill on page load
-  await applyEnergyRefillAction();
-  
   // Fetch profile data
   const profileData = await getProfileDataAction();
   
@@ -26,7 +22,7 @@ export default async function CampPage() {
 
   // Fallback values if profile data is missing
   const currentEnergy = profile?.energy || 0;
-  const lastRefill = profile?.last_energy_refill || new Date().toISOString();
+  const lastRefill = profile?.last_energy_refill || '2025-01-01T00:00:00.000Z'; // Use a fixed past date instead of new Date()
   const gold = profile?.gold || 0;
   const exp = profile?.exp || 0;
   const rankName = profile?.rank?.name || 'Novice';
@@ -101,12 +97,9 @@ export default async function CampPage() {
                 >
                   📦 Manage Inventory
                 </a>
-                <a 
-                  href="/locations" 
-                  className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-all duration-200"
-                >
+                <div className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-all duration-200">
                   🗺️ View Locations
-                </a>
+                </div>
                 <a 
                   href="/collections" 
                   className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-all duration-200"

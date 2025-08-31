@@ -6,19 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 export default async function LocationsPage() {
   const data = await getLocationsWithAvailabilityAction();
-  const locations = data.success ? (data.locations as any[]) : [];
-  const items = data.success ? (data.items as any[]) : [];
-  const meows = data.success ? (data.meows as any[]) : [];
+  const locations = data.success ? (data.locations as Array<{ id: string; name: string; description: string | null; difficulty: number }>) : [];
+  const items = data.success ? (data.items as unknown as Array<{ location_id: string; item: { id: string; name: string } }>) : [];
+  const meows = data.success ? (data.meows as unknown as Array<{ location_id: string; meow: { id: string; name: string } }>) : [];
   const currentLocationId = data.success ? (data.currentLocationId as string | null) : null;
 
-  const itemsByLocation = new Map<string, any[]>();
+  const itemsByLocation = new Map<string, Array<{ id: string; name: string }>>();
   for (const row of items) {
     const list = itemsByLocation.get(row.location_id) || [];
     list.push(row.item);
     itemsByLocation.set(row.location_id, list);
   }
 
-  const meowsByLocation = new Map<string, any[]>();
+  const meowsByLocation = new Map<string, Array<{ id: string; name: string }>>();
   for (const row of meows) {
     const list = meowsByLocation.get(row.location_id) || [];
     list.push(row.meow);
@@ -78,7 +78,7 @@ export default async function LocationsPage() {
                         <p className="text-sm text-gray-500">No items available here.</p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
-                          {locItems.map((it: any) => (
+                          {locItems.map((it: { id: string; name: string }) => (
                             <Badge key={it.id} variant="secondary" className="text-xs">{it.name}</Badge>
                           ))}
                         </div>
@@ -91,7 +91,7 @@ export default async function LocationsPage() {
                         <p className="text-sm text-gray-500">No known Meows here.</p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
-                          {locMeows.map((m: any) => (
+                          {locMeows.map((m: { id: string; name: string }) => (
                             <Badge key={m.id} className="text-xs">{m.name}</Badge>
                           ))}
                         </div>

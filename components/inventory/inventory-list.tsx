@@ -38,10 +38,10 @@ export default function InventoryList() {
         ]);
 
         if (!cancelled) {
-          setInvItems((invRes.data as any) || []);
-          setTraps((trapsRes.data as any) || []);
-          setRugs((rugsRes.data as any) || []);
-          setBaits((baitsRes.data as any) || []);
+          setInvItems((invRes.data as unknown as Array<{ item: { id: string; name: string; type: 'trap' | 'rug' | 'bait' | 'cosmetic' | 'misc'; description: string | null; price: number; rarity: string; image_url: string | null; created_at: string }; quantity: number }>) || []);
+          setTraps((trapsRes.data as Array<{ id: string; name: string; power: number; attraction: number; rarity: string; description: string | null; price: number; image_url: string | null; created_at: string }>) || []);
+          setRugs((rugsRes.data as Array<{ id: string; name: string; attraction: number; rarity: string; description: string | null; price: number; image_url: string | null; created_at: string }>) || []);
+          setBaits((baitsRes.data as Array<{ id: string; name: string; attraction: number; rarity: string; description: string | null; price: number; image_url: string | null; created_at: string }>) || []);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -79,7 +79,7 @@ export default function InventoryList() {
       setEquipping(`${type}:${id}`);
       await equipItem(id, type);
       toast({ title: "Equipped", description: `Equipped ${type}.` });
-    } catch (e) {
+    } catch {
       toast({ title: "Equip failed", description: "Please try again", variant: "destructive" });
     } finally {
       setEquipping(null);

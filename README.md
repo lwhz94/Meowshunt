@@ -152,6 +152,11 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 - `npm run lint` - Run ESLint
 - `npm run seed` - Seed database with sample data
 
+### Quality Assurance
+
+- **[QA Checklist](QA_CHECKLIST.md)** - Comprehensive testing guide covering all game functionality
+- **[Phase-2 Backlog](PHASE2_BACKLOG.md)** - Future features and development roadmap
+
 ### Database Seeding
 
 The seed script (`scripts/seed.ts`) populates your database with:
